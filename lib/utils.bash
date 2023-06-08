@@ -2,10 +2,8 @@
 
 set -euo pipefail
 
-# TODO: Ensure this is the correct GitHub homepage where releases can be downloaded for <YOUR TOOL>.
-GH_REPO="<TOOL REPO>"
-TOOL_NAME="<YOUR TOOL>"
-TOOL_TEST="<TOOL CHECK>"
+GH_REPO="https://github.com/pnpm/pnpm"
+TOOL_NAME="pnpm"
 
 fail() {
 	echo -e "asdf-$TOOL_NAME: $*"
@@ -25,14 +23,13 @@ sort_versions() {
 }
 
 list_github_tags() {
+	# TODO: filter out versions without binary releases
 	git ls-remote --tags --refs "$GH_REPO" |
-		grep -o 'refs/tags/.*' | cut -d/ -f3- |
+		grep -o 'refs/tags/v.*' | cut -d/ -f3- |
 		sed 's/^v//' # NOTE: You might want to adapt this sed to remove non-version strings from tags
 }
 
 list_all_versions() {
-	# TODO: Adapt this. By default we simply list the tag names from GitHub releases.
-	# Change this function if <YOUR TOOL> has other means of determining installable versions.
 	list_github_tags
 }
 
@@ -41,11 +38,13 @@ download_release() {
 	version="$1"
 	filename="$2"
 
-	# TODO: Adapt the release URL convention for <YOUR TOOL>
-	url="$GH_REPO/archive/v${version}.tar.gz"
+	# TODO: detect os/arch
+	url="$GH_REPO/releases/download/v${version}/pnpm-linux-x64"
 
 	echo "* Downloading $TOOL_NAME release $version..."
-	curl "${curl_opts[@]}" -o "$filename" -C - "$url" || fail "Could not download $url"
+	echo "* - url = $url"
+	echo "* - filename = $filename"
+	curl "${curl_opts[@]}" -o "$filename" "$url" || fail "Could not download $url"
 }
 
 install_version() {
@@ -61,10 +60,8 @@ install_version() {
 		mkdir -p "$install_path"
 		cp -r "$ASDF_DOWNLOAD_PATH"/* "$install_path"
 
-		# TODO: Assert <YOUR TOOL> executable exists.
-		local tool_cmd
-		tool_cmd="$(echo "$TOOL_TEST" | cut -d' ' -f1)"
-		test -x "$install_path/$tool_cmd" || fail "Expected $install_path/$tool_cmd to be executable."
+		chmod +x "$install_path/$TOOL_NAME"
+		"$install_path/$TOOL_NAME" --help &>/dev/null || fail "failed to execute $TOOL_NAME"
 
 		echo "$TOOL_NAME $version installation was successful!"
 	) || (
