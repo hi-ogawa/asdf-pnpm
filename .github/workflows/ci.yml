@@ -18,8 +18,9 @@ jobs:
       - run: asdf plugin add pnpm .
       - run: asdf list-all pnpm
       - run: asdf install pnpm latest
-      - run: asdf install pnpm 8.6.0
-      - run: asdf install pnpm 7.30.0
+      - run: asdf global pnpm latest
+      - run: type pnpm
+      - run: pnpm --help
 
   lint:
     runs-on: ubuntu-latest
